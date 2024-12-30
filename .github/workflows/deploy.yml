@@ -22,11 +22,14 @@ jobs:
         run: |
           npm run build
 
+      - name: Debug Build Output
+        run: ls -al
+
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3
         with:
           name: github-pages
-          path: ./out
+          path: ./.next
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v1
