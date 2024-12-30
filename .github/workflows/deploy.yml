@@ -50,6 +50,13 @@ jobs:
           name: github-pages-${{ github.ref_name }}
           path: ./out
 
+      - name: Extract Artifact
+        run: |
+          echo "Extracting artifact for branch ${{ github.ref_name }}:"
+          tar -xvf ./out/artifact.tar -C ./out
+          echo "Contents after extraction:"
+          ls -al ./out
+
       - name: Debug Artifact Contents
         run: |
           echo "Checking artifact contents for branch ${{ github.ref_name }}:"
