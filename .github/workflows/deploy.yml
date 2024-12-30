@@ -33,7 +33,7 @@ jobs:
           ls -al  # List the contents of the build output folder (adjust if your build output is elsewhere)
 
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-pages-artifact@v1
         with:
           name: github-pages
           path: ./out
