@@ -2,7 +2,10 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ "main", "staging", "dev" ]
+    branches:
+      - dev       # Deploy dev branch
+      - staging   # Deploy staging branch
+      - main      # Deploy main branch
 
 permissions:
   pages: write
@@ -74,3 +77,4 @@ jobs:
         uses: actions/deploy-pages@v1
         with:
           token: ${{ secrets.TOKEN }} # Your repository secret containing the GitHub token
+          destination_dir: ${{ github.ref == 'refs/heads/main' && '' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
