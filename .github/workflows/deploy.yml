@@ -4,24 +4,73 @@ on:
   push:
     branches: [ "main", "staging", "dev" ]
 
+permissions:
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install Dependencies
-        run: |
-          npm install
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Adjust as per your project requirements
 
-      - name: Build
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Debug Build Output
         run: |
-          npm run build
+          echo "Build Output Contents:"
+          ls -al  # List the contents of the build output folder (adjust if your build output is elsewhere)
+
+      - name: Upload Build Artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          name: github-pages
+          path: ./out
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+    environment:
+      name: github-pages # Required environment for Pages deployment
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: github-pages  # Name of the artifact uploaded
+          path: ./out  # Path where the artifact will be downloaded
+
+      # Remove symlinks from the artifact
+      - name: Remove Symlinks from Artifact
+        run: |
+          echo "Listing all files in the root directory:"
+          find ./out  # List all files in the root directory
+          echo "Checking for symlinks before removal:"
+          find ./out -type l  # List symlinks before removal
+          find ./out -type l -delete  # Remove symlinks
+          echo "Checking for remaining symlinks after removal:"
+          find ./out -type l  # Confirm if any symlinks remain 
+
+      - name: Debug Artifact Size
+        run: |
+          echo "Listing all files in the root directory:"
+          ls -al  # List all files in the root directory
+          echo "Checking artifact size:"
+          du -sh ./out  # Check size of the build artifact
+          echo "Listing all files in the build artifact:"
+          find ./out  # List all files in the build artifact directory
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref_name }} 
-          folder: out 
+          token: ${{ secrets.TOKEN }} # Your repository secret containing the GitHub token
