@@ -50,9 +50,14 @@ jobs:
           name: github-pages  # Name of the artifact uploaded
           path: ./out  # Path where the artifact will be downloaded
 
+      # Remove symlinks from the artifact
       - name: Remove Symlinks from Artifact
         run: |
-          find ./out -type l -delete 
+          echo "Checking for symlinks before removal:"
+          find ./out -type l -exec ls -l {} \;  # List symlinks before removal
+          find ./out -type l -delete  # Remove symlinks
+          echo "Checking for remaining symlinks after removal:"
+          find ./out -type l  # Confirm if any symlinks remain 
 
       - name: Debug Artifact Size
         run: |
