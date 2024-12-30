@@ -73,5 +73,4 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }} # Use GITHUB_TOKEN for deployment
-          branch: ${{ github.ref_name }} # Deploy to branch-specific subfolder
+          token: ${{ secrets.TOKEN }}
