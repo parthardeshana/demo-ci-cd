@@ -35,7 +35,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          name: github-pages
+          name: github-pages-${{ github.ref_name }} # Use branch name in artifact name
           path: ./out
 
   deploy:
@@ -47,30 +47,31 @@ jobs:
       - name: Download Build Artifact
         uses: actions/download-artifact@v3
         with:
-          name: github-pages  # Name of the artifact uploaded
-          path: ./out  # Path where the artifact will be downloaded
+          name: github-pages-${{ github.ref_name }} # Download artifact based on branch
+          path: ./out
 
       # Remove symlinks from the artifact
       - name: Remove Symlinks from Artifact
         run: |
           echo "Listing all files in the root directory:"
-          find ./out  # List all files in the root directory
+          find ./out
           echo "Checking for symlinks before removal:"
-          find ./out -type l  # List symlinks before removal
-          find ./out -type l -delete  # Remove symlinks
+          find ./out -type l
+          find ./out -type l -delete
           echo "Checking for remaining symlinks after removal:"
-          find ./out -type l  # Confirm if any symlinks remain 
+          find ./out -type l
 
       - name: Debug Artifact Size
         run: |
           echo "Listing all files in the root directory:"
-          ls -al  # List all files in the root directory
+          ls -al
           echo "Checking artifact size:"
-          du -sh ./out  # Check size of the build artifact
+          du -sh ./out
           echo "Listing all files in the build artifact:"
-          find ./out  # List all files in the build artifact directory
+          find ./out
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v1
         with:
-          token: ${{ secrets.TOKEN }} # Your repository secret containing the GitHub token
+          github_token: ${{ secrets.GITHUB_TOKEN }} # Use GITHUB_TOKEN for deployment
+          branch: ${{ github.ref_name }} # Deploy to branch-specific subfolder
