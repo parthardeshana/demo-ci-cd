@@ -53,6 +53,8 @@ jobs:
       # Remove symlinks from the artifact
       - name: Remove Symlinks from Artifact
         run: |
+          echo "Listing all files in the root directory:"
+          ls -al  # List all files in the root directory
           echo "Checking for symlinks before removal:"
           find ./out -type l  # List symlinks before removal
           find ./out -type l -delete  # Remove symlinks
