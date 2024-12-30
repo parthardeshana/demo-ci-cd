@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18 # Adjust as per your project requirements
+          node-version: 18
 
       - name: Install Dependencies
         run: npm install
@@ -29,8 +29,8 @@ jobs:
 
       - name: Debug Build Output
         run: |
-          echo "Build Output Contents:"
-          ls -al  # List the contents of the build output folder (adjust if your build output is elsewhere)
+          echo "Checking build output:"
+          ls -al ./out
 
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v1
@@ -50,25 +50,10 @@ jobs:
           name: github-pages-${{ github.ref_name }}
           path: ./out
 
-      # Remove symlinks from the artifact
-      - name: Remove Symlinks from Artifact
+      - name: Debug Artifact Contents
         run: |
-          echo "Listing all files in the root directory:"
-          find ./out
-          echo "Checking for symlinks before removal:"
-          find ./out -type l
-          find ./out -type l -delete
-          echo "Checking for remaining symlinks after removal:"
-          find ./out -type l
-
-      - name: Debug Artifact Size
-        run: |
-          echo "Listing all files in the root directory:"
-          ls -al
-          echo "Checking artifact size:"
-          du -sh ./out
-          echo "Listing all files in the build artifact:"
-          find ./out
+          echo "Artifact Contents:"
+          ls -al ./out
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v1
