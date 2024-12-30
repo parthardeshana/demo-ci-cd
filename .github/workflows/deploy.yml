@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main", "staging", "dev"]
+    branches: [ "main", "staging", "dev" ]
 
 permissions:
   pages: write
@@ -39,25 +39,27 @@ jobs:
           path: ./out
 
   deploy:
-  runs-on: ubuntu-latest
-  needs: build-and-deploy
-  environment:
-    name: github-pages # Required environment for Pages deployment
-  steps:
-    - name: Download Build Artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: github-pages # Name of the artifact uploaded
-        path: ./out # Path where the artifact will be downloaded
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+    environment:
+      name: github-pages # Required environment for Pages deployment
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: github-pages  # Name of the artifact uploaded
+          path: ./out  # Path where the artifact will be downloaded
 
-    - name: Debug Artifact Size
-      run: |
-        echo "Checking artifact size:"
-        du -sh ./out  # Check size of the build artifact
-        echo "Listing all files in the build artifact:"
-        find ./out  # List all files in the build artifact directory
+      - name: Debug Artifact Size
+        run: |
+          echo "Listing all files in the root directory:"
+          ls -al  # List all files in the root directory
+          echo "Checking artifact size:"
+          du -sh ./out  # Check size of the build artifact
+          echo "Listing all files in the build artifact:"
+          find ./out  # List all files in the build artifact directory
 
-    - name: Deploy to GitHub Pages
-      uses: actions/deploy-pages@v1
-      with:
-        token: ${{ secrets.TOKEN }} # Your repository secret
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
+        with:
+          token: ${{ secrets.TOKEN }} # Your repository secret containing the GitHub token
