@@ -35,20 +35,20 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          name: github-pages
+          name: github-pages-${{ github.ref_name }}
           path: ./out
 
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-deploy
     environment:
-      name: github-pages # Required environment for Pages deployment
+      name: github-pages-${{ github.ref_name }}
     steps:
       - name: Download Build Artifact
         uses: actions/download-artifact@v3
         with:
-          name: github-pages  # Name of the artifact uploaded
-          path: ./out  # Path where the artifact will be downloaded
+          name: github-pages-${{ github.ref_name }}
+          path: ./out
 
       # Remove symlinks from the artifact
       - name: Remove Symlinks from Artifact
@@ -74,3 +74,4 @@ jobs:
         uses: actions/deploy-pages@v1
         with:
           token: ${{ secrets.TOKEN }} # Your repository secret containing the GitHub token
+          environment: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/staging' && 'release' || 'dev' }}
