@@ -54,7 +54,7 @@ jobs:
       - name: Remove Symlinks from Artifact
         run: |
           echo "Checking for symlinks before removal:"
-          find ./out -type l -exec ls -l {} \;  # List symlinks before removal
+          find ./out -type l  # List symlinks before removal
           find ./out -type l -delete  # Remove symlinks
           echo "Checking for remaining symlinks after removal:"
           find ./out -type l  # Confirm if any symlinks remain 
