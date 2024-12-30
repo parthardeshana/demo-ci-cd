@@ -44,6 +44,13 @@ jobs:
     environment:
       name: github-pages # Required environment for Pages deployment
     steps:
+      - name: Debug Artifact Size
+        run: |
+          echo "Checking artifact size:"
+          du -sh ./out
+          echo "Listing all files in the build artifact:"
+          find ./out
+
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v1
         with:
