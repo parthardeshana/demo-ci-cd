@@ -29,7 +29,7 @@ jobs:
 
       - name: Debug Build Output
         run: |
-          echo "Checking build output:"
+          echo "Checking build output for branch ${{ github.ref_name }}:"
           ls -al ./out
 
       - name: Upload Build Artifact
@@ -52,7 +52,7 @@ jobs:
 
       - name: Debug Artifact Contents
         run: |
-          echo "Artifact Contents:"
+          echo "Checking artifact contents for branch ${{ github.ref_name }}:"
           ls -al ./out
 
       - name: Deploy to GitHub Pages
