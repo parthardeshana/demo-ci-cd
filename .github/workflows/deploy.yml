@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 18 # Adjust as per your project requirements
 
       - name: Install Dependencies
         run: npm install
@@ -29,8 +29,8 @@ jobs:
 
       - name: Debug Build Output
         run: |
-          echo "Checking build output for branch ${{ github.ref_name }}:"
-          ls -al ./out
+          echo "Build Output Contents:"
+          ls -al  # List the contents of the build output folder (adjust if your build output is elsewhere)
 
       - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v1
@@ -50,19 +50,27 @@ jobs:
           name: github-pages-${{ github.ref_name }}
           path: ./out
 
-      - name: Extract Artifact
+      # Remove symlinks from the artifact
+      - name: Remove Symlinks from Artifact
         run: |
-          echo "Extracting artifact for branch ${{ github.ref_name }}:"
-          tar -xvf ./out/artifact.tar -C ./out
-          echo "Contents after extraction:"
-          ls -al ./out
+          echo "Listing all files in the root directory:"
+          find ./out  # List all files in the root directory
+          echo "Checking for symlinks before removal:"
+          find ./out -type l  # List symlinks before removal
+          find ./out -type l -delete  # Remove symlinks
+          echo "Checking for remaining symlinks after removal:"
+          find ./out -type l  # Confirm if any symlinks remain 
 
-      - name: Debug Artifact Contents
+      - name: Debug Artifact Size
         run: |
-          echo "Checking artifact contents for branch ${{ github.ref_name }}:"
-          ls -al ./out
+          echo "Listing all files in the root directory:"
+          ls -al  # List all files in the root directory
+          echo "Checking artifact size:"
+          du -sh ./out  # Check size of the build artifact
+          echo "Listing all files in the build artifact:"
+          find ./out  # List all files in the build artifact directory
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v1
         with:
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.TOKEN }} # Your repository secret containing the GitHub token
