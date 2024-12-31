@@ -74,3 +74,8 @@ jobs:
         uses: actions/deploy-pages@v1
         with:
           token: ${{ secrets.TOKEN }} # Your repository secret containing the GitHub token
+          artifact_name: github-pages-${{ github.ref_name }} 
+
+      - name: Log GitHub Pages URL
+        run: |
+          echo "GitHub Pages URL: ${{ steps.deploy-pages.outputs.page_url }}"
