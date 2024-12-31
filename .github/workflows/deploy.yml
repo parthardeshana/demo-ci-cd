@@ -1,15 +1,12 @@
-name: Deploy to GitHub Pages
+name: Deploy to Hostinger VPS
 
 on:
   push:
-    branches: [ "main", "staging", "dev" ]
-
-permissions:
-  pages: write
-  id-token: write
+    branches:
+      - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18 # Adjust as per your project requirements
+          node-version: 18
 
       - name: Install Dependencies
         run: npm install
@@ -27,55 +24,13 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      - name: Debug Build Output
+      - name: Deploy to VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          echo "Build Output Contents:"
-          ls -al  # List the contents of the build output folder (adjust if your build output is elsewhere)
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 "rm -rf /var/www/main.technithunderlabs.com/*"
+          scp -r ./out/* thunder@62.72.5.193:/var/www/main.technithunderlabs.com/
 
-      - name: Upload Build Artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          name: github-pages-${{ github.ref_name }}
-          path: ./out
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-deploy
-    environment:
-      name: github-pages-${{ github.ref_name }}
-    steps:
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: github-pages-${{ github.ref_name }}
-          path: ./out
-
-      # Remove symlinks from the artifact
-      - name: Remove Symlinks from Artifact
-        run: |
-          echo "Listing all files in the root directory:"
-          find ./out  # List all files in the root directory
-          echo "Checking for symlinks before removal:"
-          find ./out -type l  # List symlinks before removal
-          find ./out -type l -delete  # Remove symlinks
-          echo "Checking for remaining symlinks after removal:"
-          find ./out -type l  # Confirm if any symlinks remain 
-
-      - name: Debug Artifact Size
-        run: |
-          echo "Listing all files in the root directory:"
-          ls -al  # List all files in the root directory
-          echo "Checking artifact size:"
-          du -sh ./out  # Check size of the build artifact
-          echo "Listing all files in the build artifact:"
-          find ./out  # List all files in the build artifact directory
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
-        with:
-          token: ${{ secrets.TOKEN }} # Your repository secret containing the GitHub token
-          artifact_name: github-pages-${{ github.ref_name }} 
-
-      - name: Log GitHub Pages URL
-        run: |
-          echo "GitHub Pages URL: ${{ steps.deploy-pages.outputs.page_url }}"
