@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - staging
+      - dev
 
 jobs:
   deploy:
@@ -21,9 +23,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Project
-        run: npm run build
-
       - name: Deploy to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -32,12 +31,37 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Ensure the target directory exists on the VPS (test 1)
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 "mkdir -p /var/www/main.technithunderlabs.com"
+          # SSH into the VPS
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << 'EOF'
+            # Determine which subdomain to deploy based on the branch
+            if [ "$GITHUB_REF" == "refs/heads/main" ]; then
+              TARGET_DIR="/front/demo-ci-cd/main"
+              DOMAIN="main.technithunderlabs.com"
+            elif [ "$GITHUB_REF" == "refs/heads/staging" ]; then
+              TARGET_DIR="/front/demo-ci-cd/staging"
+              DOMAIN="staging.technithunderlabs.com"
+            elif [ "$GITHUB_REF" == "refs/heads/dev" ]; then
+              TARGET_DIR="/front/demo-ci-cd/dev"
+              DOMAIN="dev.technithunderlabs.com"
+            else
+              echo "No valid branch detected. Skipping deployment."
+              exit 1
+            fi
 
-          # Remove existing files in the target directory
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 "rm -rf /var/www/main.technithunderlabs.com/*"
+            # Navigate to the project directory for the selected subdomain
+            cd $TARGET_DIR
+            cd demo-ci-cd
 
-          # Copy new files to the target directory
-          scp -r ./out/* thunder@62.72.5.193:/var/www/main.technithunderlabs.com/
+            # Pull the latest code from the corresponding repository
+            git checkout $(basename $GITHUB_REF)
+            git pull origin $(basename $GITHUB_REF)
 
+            # Install dependencies
+            npm install
+
+            # Build the project
+            npm run build
+
+            # Start the app (use npm run dev for development, or adjust for production)
+            pm2 restart $DOMAIN || pm2 start npm --name "$DOMAIN" -- run dev
+          EOF
