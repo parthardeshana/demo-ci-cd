@@ -8,7 +8,7 @@ on:
       - dev
 
 env:
-  GITHUB_REF: ${{ github.ref_name }}
+  GITHUB_REF: ${{ github.head_ref || github.ref_name }} 
 
 jobs:
   deploy:
