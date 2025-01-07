@@ -28,7 +28,7 @@ jobs:
       - name: Deploy to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          GITHUB_REF: ${{ github.head_ref || github.ref_name }} 
+          CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} 
         run: |
           echo "Setting up SSH..."
           mkdir -p ~/.ssh
@@ -38,20 +38,20 @@ jobs:
 
           echo "Connecting to the VPS..."
           ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << 'EOF'
-            echo "$GITHUB_REF"
+            echo "$CURRENT_BRANCH"
 
             echo "Determining deployment target based on branch..."
 
             # Determine which subdomain to deploy based on the branch
-            if [ "$GITHUB_REF" == "refs/heads/main" ]; then
+            if [ "$CURRENT_BRANCH" == "refs/heads/main" ]; then
               TARGET_DIR="/front/demo-ci-cd/main"
               DOMAIN="main.technithunderlabs.com"
               echo "Deploying to main branch"
-            elif [ "$GITHUB_REF" == "refs/heads/staging" ]; then
+            elif [ "$CURRENT_BRANCH" == "refs/heads/staging" ]; then
               TARGET_DIR="/front/demo-ci-cd/staging"
               DOMAIN="staging.technithunderlabs.com"
               echo "Deploying to staging branch"
-            elif [ "$GITHUB_REF" == "refs/heads/dev" ]; then
+            elif [ "$CURRENT_BRANCH" == "refs/heads/dev" ]; then
               TARGET_DIR="/front/demo-ci-cd/dev"
               DOMAIN="dev.technithunderlabs.com"
               echo "Deploying to dev branch"
@@ -64,10 +64,10 @@ jobs:
             cd $TARGET_DIR
             cd demo-ci-cd
 
-            echo "Checking out the correct branch: $(basename $GITHUB_REF)"
-            git checkout $(basename $GITHUB_REF)
+            echo "Checking out the correct branch: $(basename $CURRENT_BRANCH)"
+            git checkout $(basename $CURRENT_BRANCH)
             echo "Pulling the latest code..."
-            git pull origin $(basename $GITHUB_REF)
+            git pull origin $(basename $CURRENT_BRANCH)
 
             echo "Installing project dependencies..."
             npm install
