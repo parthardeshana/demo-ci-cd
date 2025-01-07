@@ -38,6 +38,7 @@ jobs:
 
           echo "Connecting to the VPS..."
           ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << "EOF"
+            export CURRENT_BRANCH="$CURRENT_BRANCH"
             echo "=========> $CURRENT_BRANCH"
             echo "=========> ${{ github.head_ref || github.ref_name }} "
 
