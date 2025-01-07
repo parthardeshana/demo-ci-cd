@@ -32,7 +32,7 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Ensure the target directory exists on the VPS
+          # Ensure the target directory exists on the VPS (test 1)
           ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 "mkdir -p /var/www/main.technithunderlabs.com"
 
           # Remove existing files in the target directory
