@@ -21,47 +21,60 @@ jobs:
           node-version: 18
 
       - name: Install Dependencies
-        run: npm install
+        run: |
+          echo "Installing dependencies..."
+          npm install
 
       - name: Deploy to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          echo "Setting up SSH..."
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          echo "SSH setup complete."
 
-          # SSH into the VPS
+          echo "Connecting to the VPS..."
           ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << 'EOF'
+            echo "GITHUB_REF value: $GITHUB_REF"
+
+            echo "Determining deployment target based on branch..."
+
             # Determine which subdomain to deploy based on the branch
             if [ "$GITHUB_REF" == "refs/heads/main" ]; then
               TARGET_DIR="/front/demo-ci-cd/main"
               DOMAIN="main.technithunderlabs.com"
+              echo "Deploying to main branch"
             elif [ "$GITHUB_REF" == "refs/heads/staging" ]; then
               TARGET_DIR="/front/demo-ci-cd/staging"
               DOMAIN="staging.technithunderlabs.com"
+              echo "Deploying to staging branch"
             elif [ "$GITHUB_REF" == "refs/heads/dev" ]; then
               TARGET_DIR="/front/demo-ci-cd/dev"
               DOMAIN="dev.technithunderlabs.com"
+              echo "Deploying to dev branch"
             else
               echo "No valid branch detected. Skipping deployment."
               exit 1
             fi
 
-            # Navigate to the project directory for the selected subdomain
+            echo "Navigating to project directory for $DOMAIN..."
             cd $TARGET_DIR
             cd demo-ci-cd
 
-            # Pull the latest code from the corresponding repository
+            echo "Checking out the correct branch: $(basename $GITHUB_REF)"
             git checkout $(basename $GITHUB_REF)
+            echo "Pulling the latest code..."
             git pull origin $(basename $GITHUB_REF)
 
-            # Install dependencies
+            echo "Installing project dependencies..."
             npm install
 
-            # Build the project
+            echo "Building the project..."
             npm run build
 
-            # Start the app (use npm run dev for development, or adjust for production)
+            echo "Starting the app with pm2..."
             pm2 restart $DOMAIN || pm2 start npm --name "$DOMAIN" -- run dev
+            echo "App deployment complete."
           EOF
