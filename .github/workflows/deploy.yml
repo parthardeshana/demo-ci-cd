@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          echo "Installing dependencies..."
+          echo "DEPLOY_STEP: Current directory: $(pwd)"
           npm install
 
       - name: Deploy to VPS
@@ -30,57 +30,45 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} 
         run: |
-          echo "Setting up SSH..."
+          echo "DEPLOY_SETUP: Current directory: $(pwd)"
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          echo "SSH setup complete."
 
-          echo "Connecting to the VPS..."
+          echo "SSH_CONNECT: Current directory: $(pwd)"
           ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 <<EOF
-            # Export the CURRENT_BRANCH environment variable to the SSH session
+            echo "SSH_SESSION: Current directory: $(pwd)"
             export CURRENT_BRANCH="$CURRENT_BRANCH"
+            echo "BRANCH_INFO: Current directory: $(pwd)"
             
-            # Output the current branch for debugging
-            echo "=========> ${CURRENT_BRANCH}"
-            echo "=========> ${{ github.head_ref || github.ref_name }}"
-
-            echo "Determining deployment target based on branch..."
-
-            # Determine which subdomain to deploy based on the branch
             if [ ${CURRENT_BRANCH} == "main" ]; then
               TARGET_DIR="/front/demo-ci-cd/main"
               DOMAIN="main.technithunderlabs.com"
-              echo "Deploying to main branch"
             elif [ ${CURRENT_BRANCH} == "staging" ]; then
               TARGET_DIR="/front/demo-ci-cd/staging"
               DOMAIN="staging.technithunderlabs.com"
-              echo "Deploying to staging branch"
             elif [ ${CURRENT_BRANCH} == "dev" ]; then
               TARGET_DIR="/front/demo-ci-cd/dev"
               DOMAIN="dev.technithunderlabs.com"
-              echo "Deploying to dev branch"
             else
-              echo "No valid branch detected. Skipping deployment."
               exit 1
             fi
 
-            echo "Navigating to project directory for $DOMAIN..."
+            echo "TARGET_DIR: Current directory: $(pwd)"
             cd $TARGET_DIR
+            echo "ENTER_DIR: Current directory: $(pwd)"
             cd demo-ci-cd
+            echo "ENTER_SUBDIR: Current directory: $(pwd)"
 
-            echo "Checking out the correct branch: $(basename ${CURRENT_BRANCH})"
             git checkout $(basename ${CURRENT_BRANCH})
-            echo "Pulling the latest code..."
             git pull origin $(basename ${CURRENT_BRANCH})
 
-            echo "Installing project dependencies..."
+            echo "INSTALL_DEPS: Current directory: $(pwd)"
             npm install
 
-            echo "Building the project..."
+            echo "BUILD_PROJECT: Current directory: $(pwd)"
             npm run build
 
-            echo "Starting the app with pm2..."
+            echo "PM2_SETUP: Current directory: $(pwd)"
             pm2 restart $DOMAIN || pm2 start npm --name "$DOMAIN" -- run dev
-            echo "App deployment complete."
           EOF
