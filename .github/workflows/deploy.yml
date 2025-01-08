@@ -45,8 +45,10 @@ jobs:
 
             ls -la
             cd front
+            echo "Now In Front Directory ========================>"
             ls -la
             cd demo-ci-cd
+            echo "Now In demo-ci-cd Directory ========================>"
             ls -la
             
             if [ ${CURRENT_BRANCH} == "main" ]; then
@@ -62,11 +64,8 @@ jobs:
               exit 1
             fi
 
-            echo "TARGET_DIR: Current directory: $(pwd)"
             cd $TARGET_DIR
-            echo "ENTER_DIR: Current directory: $(pwd)"
-            cd demo-ci-cd
-            echo "ENTER_SUBDIR: Current directory: $(pwd)"
+            echo "=================> Currently In ${TARGET_DIR}"
 
             git checkout $(basename ${CURRENT_BRANCH})
             git pull origin $(basename ${CURRENT_BRANCH})
