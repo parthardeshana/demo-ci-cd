@@ -42,6 +42,7 @@ jobs:
             export CURRENT_BRANCH="$CURRENT_BRANCH"
             echo "BRANCH_INFO: Current directory: $(pwd)"
 
+            ls -la
             cd /front/demo-ci-cd
             
             if [ ${CURRENT_BRANCH} == "main" ]; then
