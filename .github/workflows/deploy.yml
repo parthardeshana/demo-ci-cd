@@ -43,20 +43,20 @@ jobs:
             echo "BRANCH_INFO: Current directory: $(pwd)"
             
             if [ ${CURRENT_BRANCH} == "main" ]; then
-              TARGET_DIR="/front/demo-ci-cd/main"
+              TARGET_DIR="/main"
               DOMAIN="main.technithunderlabs.com"
             elif [ ${CURRENT_BRANCH} == "staging" ]; then
-              TARGET_DIR="/front/demo-ci-cd/staging"
+              TARGET_DIR="/staging"
               DOMAIN="staging.technithunderlabs.com"
             elif [ ${CURRENT_BRANCH} == "dev" ]; then
-              TARGET_DIR="/front/demo-ci-cd/dev"
+              TARGET_DIR="/dev"
               DOMAIN="dev.technithunderlabs.com"
             else
               exit 1
             fi
 
             echo "TARGET_DIR: Current directory: $(pwd)"
-            cd /
+            cd /front/demo-ci-cd
             cd $TARGET_DIR
             echo "ENTER_DIR: Current directory: $(pwd)"
             cd demo-ci-cd
