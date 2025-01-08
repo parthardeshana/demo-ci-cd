@@ -38,7 +38,7 @@ jobs:
           echo "SSH_CONNECT: Current directory: $(pwd)"
           ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 <<EOF
             echo "SSH_SESSION: Current directory: $(pwd)"
-            cd ~
+            source ~/.bashrc
             export CURRENT_BRANCH="$CURRENT_BRANCH"
             echo "BRANCH_INFO: Current directory: $(pwd)"
             
@@ -56,6 +56,7 @@ jobs:
             fi
 
             echo "TARGET_DIR: Current directory: $(pwd)"
+            cd ~
             cd $TARGET_DIR
             echo "ENTER_DIR: Current directory: $(pwd)"
             cd demo-ci-cd
