@@ -20,16 +20,15 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Dependencies
-        run: |
-          echo "DEPLOY_STEP: Current directory: $(pwd)"
-          npm install
+      # - name: Install Dependencies
+      #   run: |
+      #     echo "DEPLOY_STEP: Current directory: $(pwd)"
+      #     npm install
 
       - name: Deploy to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} 
-        working-directory: /home/thunder
         run: |
           echo "DEPLOY_SETUP: Current directory: $(pwd)"
           mkdir -p ~/.ssh
