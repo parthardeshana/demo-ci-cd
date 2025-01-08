@@ -44,7 +44,7 @@ jobs:
             echo "BRANCH_INFO: Current directory: $(pwd)"
 
             ls -la
-            cd /front/demo-ci-cd
+            cd front/demo-ci-cd
             
             if [ ${CURRENT_BRANCH} == "main" ]; then
               TARGET_DIR="/main"
