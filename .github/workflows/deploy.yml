@@ -70,13 +70,6 @@ jobs:
               exit 1
             fi
 
-            echo "<========== Below is TARGET_DIR ==========>"
-            echo $TARGET_DIR
-
-            cd $TARGET_DIR
-            ls -la
-            echo "=================> Current Branch ${CURRENT_BRANCH}"
-            echo "=================> Currently In ${TARGET_DIR}"
             ls -la
 
             git checkout $(basename ${CURRENT_BRANCH})
