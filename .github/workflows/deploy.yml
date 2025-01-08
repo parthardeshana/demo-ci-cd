@@ -55,32 +55,30 @@ jobs:
               echo "main if condition called ==========================>"
               cd main/demo-ci-cd
               ls -la
-              DOMAIN="main.technithunderlabs.com"
+              git checkout main
+              git pull origin main
+              npm install
+              npm run build
+              sudo pm2 start npm - name "main.technithunderlabs.com" - start
             elif [ ${CURRENT_BRANCH} == "staging" ]; then
               echo "staging condition called ==========================>"
               cd staging/demo-ci-cd
               ls -la
-              DOMAIN="staging.technithunderlabs.com"
+              git checkout staging
+              git pull origin staging
+              npm install
+              npm run build
+              sudo pm2 start npm - name "staging.technithunderlabs.com" - start
             elif [ ${CURRENT_BRANCH} == "dev" ]; then
               echo "dev condition called ==========================>"
               cd dev/demo-ci-cd
               ls -la
-              DOMAIN="dev.technithunderlabs.com"
+              git checkout dev
+              git pull origin dev
+              npm install
+              npm run build
+              sudo pm2 start npm - name "dev.technithunderlabs.com" - start
             else
               exit 1
             fi
-
-            ls -la
-
-            git checkout $(basename ${CURRENT_BRANCH})
-            git pull origin $(basename ${CURRENT_BRANCH})
-
-            echo "INSTALL_DEPS: Current directory: $(pwd)"
-            npm install
-
-            echo "BUILD_PROJECT: Current directory: $(pwd)"
-            npm run build
-
-            echo "PM2_SETUP: Current directory: $(pwd)"
-            pm2 restart $DOMAIN || pm2 start npm --name "$DOMAIN" -- run dev
           EOF
