@@ -41,6 +41,8 @@ jobs:
             source ~/.bashrc
             export CURRENT_BRANCH="$CURRENT_BRANCH"
             echo "BRANCH_INFO: Current directory: $(pwd)"
+
+            cd /front/demo-ci-cd
             
             if [ ${CURRENT_BRANCH} == "main" ]; then
               TARGET_DIR="/main"
@@ -56,7 +58,6 @@ jobs:
             fi
 
             echo "TARGET_DIR: Current directory: $(pwd)"
-            cd /front/demo-ci-cd
             cd $TARGET_DIR
             echo "ENTER_DIR: Current directory: $(pwd)"
             cd demo-ci-cd
