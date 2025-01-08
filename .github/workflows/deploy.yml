@@ -59,7 +59,7 @@ jobs:
               git pull origin main
               npm install
               npm run build
-              pm2 start npm --name "main.technithunderlabs.com" --start
+              pm2 start npm --name "main.technithunderlabs.com" -- start
               pm2 save
             elif [ ${CURRENT_BRANCH} == "staging" ]; then
               echo "staging condition called ==========================>"
@@ -69,7 +69,7 @@ jobs:
               git pull origin staging
               npm install
               npm run build
-              pm2 start npm --name "staging.technithunderlabs.com" --start
+              pm2 start npm --name "staging.technithunderlabs.com" -- start
               pm2 save
             elif [ ${CURRENT_BRANCH} == "dev" ]; then
               echo "dev condition called ==========================>"
@@ -79,7 +79,7 @@ jobs:
               git pull origin dev
               npm install
               npm run build
-              pm2 start npm --name "dev.technithunderlabs.com" --start
+              pm2 start npm --name "dev.technithunderlabs.com" -- start
               pm2 save            
             else
               exit 1
