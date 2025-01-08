@@ -52,7 +52,7 @@ jobs:
             ls -la
             
             if [ ${CURRENT_BRANCH} == "main" ]; then
-              echo "main if condition called ==========================>"
+              echo "main if condition called ========> test deployment (1) ==========================>"
               cd main/demo-ci-cd
               ls -la
               git checkout main
