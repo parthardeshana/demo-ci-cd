@@ -52,12 +52,15 @@ jobs:
             ls -la
             
             if [ ${CURRENT_BRANCH} == "main" ]; then
+              echo "main if condition called ==========================>"
               cd main
               DOMAIN="main.technithunderlabs.com"
             elif [ ${CURRENT_BRANCH} == "staging" ]; then
+              echo "staging condition called ==========================>"
               cd staging
               DOMAIN="staging.technithunderlabs.com"
             elif [ ${CURRENT_BRANCH} == "dev" ]; then
+              echo "dev condition called ==========================>"
               cd dev
               DOMAIN="dev.technithunderlabs.com"
             else
