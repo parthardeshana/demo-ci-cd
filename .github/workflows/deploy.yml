@@ -65,7 +65,9 @@ jobs:
             fi
 
             cd $TARGET_DIR
-            echo "=================> Currently In ${TARGET_DIR}"
+            echo "=================> Current Branch ${CURRENT_BRANCH}"
+            echo "=================> Currently In $TARGET_DIR"
+            ls -la
 
             git checkout $(basename ${CURRENT_BRANCH})
             git pull origin $(basename ${CURRENT_BRANCH})
