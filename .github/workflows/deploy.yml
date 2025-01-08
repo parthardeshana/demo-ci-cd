@@ -56,7 +56,6 @@ jobs:
             fi
 
             echo "TARGET_DIR: Current directory: $(pwd)"
-            cd
             cd $TARGET_DIR
             echo "ENTER_DIR: Current directory: $(pwd)"
             cd demo-ci-cd
