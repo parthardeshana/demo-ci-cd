@@ -29,7 +29,7 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} 
-        working-directory: /front
+        working-directory: /home/thunder
         run: |
           echo "DEPLOY_SETUP: Current directory: $(pwd)"
           mkdir -p ~/.ssh
