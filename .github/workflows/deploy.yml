@@ -23,7 +23,7 @@ jobs:
       - name: Deploy to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }}
+          CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} 
         shell: bash
         run: |
           mkdir -p ~/.ssh
@@ -34,41 +34,43 @@ jobs:
             source ~/.bashrc
             export CURRENT_BRANCH="$CURRENT_BRANCH"
 
-            # Directory navigation based on the branch
-            cd front/demo-ci-cd
-
-            case ${CURRENT_BRANCH} in
-              "main")
-                cd main
-                ;;
-              "staging")
-                cd staging
-                ;;
-              "dev")
-                cd dev
-                ;;
-              *)
-                echo "Unsupported branch: $CURRENT_BRANCH"
-                exit 1
-                ;;
-            esac
-
-            # Perform Git operations and build for the selected branch
-            ls -la
-            git checkout $CURRENT_BRANCH
-            git pull origin $CURRENT_BRANCH
-            npm install
-            npm run build
-
-            # Manage the application using pm2 based on branch
-            pm2 delete $CURRENT_BRANCH
-            pm2 flush
-            PORT=$(case ${CURRENT_BRANCH} in
-                      "main") echo "3007" ;;
-                      "staging") echo "3009" ;;
-                      "dev") echo "3008" ;;
-                      *) exit 1 ;;
-                    esac)
-            pm2 start npm --name "$CURRENT_BRANCH" -- start
-            pm2 save
+            cd front
+            cd demo-ci-cd
+            
+            if [ ${CURRENT_BRANCH} == "main" ]; then
+              cd main/demo-ci-cd
+              ls -la
+              git checkout main
+              git pull origin main
+              npm install
+              npm run build
+              pm2 delete main
+              pm2 flush
+              PORT=3007 pm2 start npm --name "main" -- start
+              pm2 save
+            elif [ ${CURRENT_BRANCH} == "staging" ]; then
+              cd staging/demo-ci-cd
+              ls -la
+              git checkout staging
+              git pull origin staging
+              npm install
+              npm run build
+              pm2 delete staging
+              pm2 flush
+              PORT=3009 pm2 start npm --name "staging" -- start
+              pm2 save
+            elif [ ${CURRENT_BRANCH} == "dev" ]; then
+              cd dev/demo-ci-cd
+              ls -la
+              git checkout dev
+              git pull origin dev
+              npm install
+              npm run build
+              pm2 delete dev
+              pm2 flush
+              PORT=3008 pm2 start npm --name "dev" -- start
+              pm2 save           
+            else
+              exit 1
+            fi
           EOF
