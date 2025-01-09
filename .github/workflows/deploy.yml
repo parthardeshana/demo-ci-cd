@@ -20,75 +20,57 @@ jobs:
         with:
           node-version: 18
 
-      - name: Configure SSH Keys
+      - name: Deploy to VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} 
+        shell: bash
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: Connect to VPS
-        run: |
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 <<EOF
             source ~/.bashrc
-            export CURRENT_BRANCH="${{ github.head_ref || github.ref_name }}" 
-            EOF
+            export CURRENT_BRANCH="$CURRENT_BRANCH"
 
-      - name: Change to Project Directory
-        run: |
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
-            cd front/demo-ci-cd
-            EOF
-
-      - name: Select Branch Directory
-        run: |
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
-            if [ "${CURRENT_BRANCH}" == "main" ]; then
+            cd front
+            cd demo-ci-cd
+            
+            if [ ${CURRENT_BRANCH} == "main" ]; then
               cd main/demo-ci-cd
-            elif [ "${CURRENT_BRANCH}" == "staging" ]; then
-              cd staging/demo-ci-cd
-            elif [ "${CURRENT_BRANCH}" == "dev" ]; then
-              cd dev/demo-ci-cd
-            else
-              exit 1
-            fi
-            EOF
-
-      - name: Git Operations
-        run: |
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
-            git checkout "${CURRENT_BRANCH}"
-            git pull origin "${CURRENT_BRANCH}"
-            EOF
-
-      - name: Install Dependencies
-        run: |
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
-            npm install
-            EOF
-
-      - name: Build Project
-        run: |
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
-            npm run build
-            EOF
-
-      - name: Restart PM2 
-        run: |
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
-            if [ "${CURRENT_BRANCH}" == "main" ]; then
+              ls -la
+              git checkout main
+              git pull origin main
+              npm install
+              npm run build
               pm2 delete main
               pm2 flush
               PORT=3007 pm2 start npm --name "main" -- start
               pm2 save
-            elif [ "${CURRENT_BRANCH}" == "staging" ]; then
+            elif [ ${CURRENT_BRANCH} == "staging" ]; then
+              cd staging/demo-ci-cd
+              ls -la
+              git checkout staging
+              git pull origin staging
+              npm install
+              npm run build
               pm2 delete staging
               pm2 flush
               PORT=3009 pm2 start npm --name "staging" -- start
               pm2 save
-            elif [ "${CURRENT_BRANCH}" == "dev" ]; then
+            elif [ ${CURRENT_BRANCH} == "dev" ]; then
+              cd dev/demo-ci-cd
+              ls -la
+              git checkout dev
+              git pull origin dev
+              npm install
+              npm run build
               pm2 delete dev
               pm2 flush
               PORT=3008 pm2 start npm --name "dev" -- start
-              pm2 save
+              pm2 save           
+            else
+              exit 1
             fi
-            EOF
+          EOF
