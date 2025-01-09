@@ -2,10 +2,9 @@ import React from "react";
 
 const Page = () => {
   return (
-    <>
-      <h1>Main branch</h1>
-      <h1>Showing Results to mpal and asolanki</h1>
-    </>
+    <div class="flex h-screen w-screen items-center justify-center bg-yellow-500">
+      <h1 className="text-[50px] font-bold">Dev branch</h1>
+    </div>
   );
 };
 
