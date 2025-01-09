@@ -62,25 +62,27 @@ jobs:
               PORT=3007 pm2 start npm --name "main" -- start
               pm2 save
             elif [ ${CURRENT_BRANCH} == "staging" ]; then
-              echo "staging condition called ==========================>"
               cd staging/demo-ci-cd
               ls -la
               git checkout staging
               git pull origin staging
               npm install
               npm run build
-              pm2 start npm --name "staging" -- start
+              pm2 delete staging
+              pm2 flush
+              PORT=3009 pm2 start npm --name "staging" -- start
               pm2 save
             elif [ ${CURRENT_BRANCH} == "dev" ]; then
-              echo "dev condition called ==========================>"
               cd dev/demo-ci-cd
               ls -la
               git checkout dev
               git pull origin dev
               npm install
               npm run build
-              pm2 start npm --name "dev" -- start
-              pm2 save            
+              pm2 delete dev
+              pm2 flush
+              PORT=3008 pm2 start npm --name "dev" -- start
+              pm2 save           
             else
               exit 1
             fi
