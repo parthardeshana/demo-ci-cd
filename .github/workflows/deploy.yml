@@ -37,7 +37,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
           echo "SSH_CONNECT: Current directory: $(pwd)"
-          ssh -o StrictHostKeyChecking=no root@62.72.5.193 <<EOF
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 <<EOF
             echo "SSH_SESSION: Current directory: $(pwd)"
             source ~/.bashrc
             export CURRENT_BRANCH="$CURRENT_BRANCH"
@@ -52,7 +52,7 @@ jobs:
             ls -la
             
             if [ ${CURRENT_BRANCH} == "main" ]; then
-              echo "main if condition called ========> test deployment (3) ==========================>"
+              echo "main if condition called ========> test deployment (4) ==========================>"
               cd main/demo-ci-cd
               ls -la
               git checkout main
