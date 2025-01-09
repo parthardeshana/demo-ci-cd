@@ -20,70 +20,75 @@ jobs:
         with:
           node-version: 18
 
-      # - name: Install Dependencies
-      #   run: |
-      #     echo "DEPLOY_STEP: Current directory: $(pwd)"
-      #     npm install
-
-      - name: Deploy to VPS
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} 
-        shell: bash
+      - name: Configure SSH Keys
         run: |
-          echo "DEPLOY_SETUP: Current directory: $(pwd)"
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          echo "SSH_CONNECT: Current directory: $(pwd)"
-          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 <<EOF
-            echo "SSH_SESSION: Current directory: $(pwd)"
+      - name: Connect to VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
             source ~/.bashrc
-            export CURRENT_BRANCH="$CURRENT_BRANCH"
-            echo "BRANCH_INFO: Current directory: $(pwd)"
+            export CURRENT_BRANCH="${{ github.head_ref || github.ref_name }}" 
+            EOF
 
-            ls -la
-            cd front
-            echo "Now In Front Directory ========================>"
-            ls -la
-            cd demo-ci-cd
-            ls -la
-            
-            if [ ${CURRENT_BRANCH} == "main" ]; then
+      - name: Change to Project Directory
+        run: |
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
+            cd front/demo-ci-cd
+            EOF
+
+      - name: Select Branch Directory
+        run: |
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
+            if [ "${CURRENT_BRANCH}" == "main" ]; then
               cd main/demo-ci-cd
-              ls -la
-              git checkout main
-              git pull origin main
-              npm install
-              npm run build
+            elif [ "${CURRENT_BRANCH}" == "staging" ]; then
+              cd staging/demo-ci-cd
+            elif [ "${CURRENT_BRANCH}" == "dev" ]; then
+              cd dev/demo-ci-cd
+            else
+              exit 1
+            fi
+            EOF
+
+      - name: Git Operations
+        run: |
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
+            git checkout "${CURRENT_BRANCH}"
+            git pull origin "${CURRENT_BRANCH}"
+            EOF
+
+      - name: Install Dependencies
+        run: |
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
+            npm install
+            EOF
+
+      - name: Build Project
+        run: |
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
+            npm run build
+            EOF
+
+      - name: Restart PM2 
+        run: |
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 << EOF
+            if [ "${CURRENT_BRANCH}" == "main" ]; then
               pm2 delete main
               pm2 flush
               PORT=3007 pm2 start npm --name "main" -- start
               pm2 save
-            elif [ ${CURRENT_BRANCH} == "staging" ]; then
-              cd staging/demo-ci-cd
-              ls -la
-              git checkout staging
-              git pull origin staging
-              npm install
-              npm run build
+            elif [ "${CURRENT_BRANCH}" == "staging" ]; then
               pm2 delete staging
               pm2 flush
               PORT=3009 pm2 start npm --name "staging" -- start
               pm2 save
-            elif [ ${CURRENT_BRANCH} == "dev" ]; then
-              cd dev/demo-ci-cd
-              ls -la
-              git checkout dev
-              git pull origin dev
-              npm install
-              npm run build
+            elif [ "${CURRENT_BRANCH}" == "dev" ]; then
               pm2 delete dev
               pm2 flush
               PORT=3008 pm2 start npm --name "dev" -- start
-              pm2 save           
-            else
-              exit 1
+              pm2 save
             fi
-          EOF
+            EOF
