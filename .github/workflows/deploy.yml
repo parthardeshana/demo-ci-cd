@@ -1,18 +1,14 @@
-name: Deploy to GitHub Pages
+name: Deploy to Hostinger VPS
 
 on:
   push:
     branches:
-      - dev       # Deploy dev branch
-      - staging   # Deploy staging branch
-      - main      # Deploy main branch
-
-permissions:
-  pages: write
-  id-token: write
+      - main
+      - staging
+      - dev
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,59 +18,72 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18 # Adjust as per your project requirements
+          node-version: 18
 
-      - name: Install Dependencies
-        run: npm install
+      # - name: Install Dependencies
+      #   run: |
+      #     echo "DEPLOY_STEP: Current directory: $(pwd)"
+      #     npm install
 
-      - name: Build Project
-        run: npm run build
-
-      - name: Debug Build Output
+      - name: Deploy to VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} 
+        shell: bash
         run: |
-          echo "Build Output Contents:"
-          ls -al  # List the contents of the build output folder (adjust if your build output is elsewhere)
+          echo "DEPLOY_SETUP: Current directory: $(pwd)"
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-      - name: Upload Build Artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          name: github-pages
-          path: ./out
+          echo "SSH_CONNECT: Current directory: $(pwd)"
+          ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 <<EOF
+            echo "SSH_SESSION: Current directory: $(pwd)"
+            source ~/.bashrc
+            export CURRENT_BRANCH="$CURRENT_BRANCH"
+            echo "BRANCH_INFO: Current directory: $(pwd)"
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-deploy
-    environment:
-      name: github-pages # Required environment for Pages deployment
-    steps:
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: github-pages  # Name of the artifact uploaded
-          path: ./out  # Path where the artifact will be downloaded
-
-      # Remove symlinks from the artifact
-      - name: Remove Symlinks from Artifact
-        run: |
-          echo "Listing all files in the root directory:"
-          find ./out  # List all files in the root directory
-          echo "Checking for symlinks before removal:"
-          find ./out -type l  # List symlinks before removal
-          find ./out -type l -delete  # Remove symlinks
-          echo "Checking for remaining symlinks after removal:"
-          find ./out -type l  # Confirm if any symlinks remain 
-
-      - name: Debug Artifact Size
-        run: |
-          echo "Listing all files in the root directory:"
-          ls -al  # List all files in the root directory
-          echo "Checking artifact size:"
-          du -sh ./out  # Check size of the build artifact
-          echo "Listing all files in the build artifact:"
-          find ./out  # List all files in the build artifact directory
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
-        with:
-          token: ${{ secrets.TOKEN }} # Your repository secret containing the GitHub token
-          destination_dir: ${{ github.ref == 'refs/heads/main' && '' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
+            ls -la
+            cd front
+            echo "Now In Front Directory ========================>"
+            ls -la
+            cd demo-ci-cd
+            ls -la
+            
+            if [ ${CURRENT_BRANCH} == "main" ]; then
+              cd main/demo-ci-cd
+              ls -la
+              git checkout main
+              git pull origin main
+              npm install
+              npm run build
+              pm2 delete main
+              pm2 flush
+              PORT=3007 pm2 start npm --name "main" -- start
+              pm2 save
+            elif [ ${CURRENT_BRANCH} == "staging" ]; then
+              cd staging/demo-ci-cd
+              ls -la
+              git checkout staging
+              git pull origin staging
+              npm install
+              npm run build
+              pm2 delete staging
+              pm2 flush
+              PORT=3009 pm2 start npm --name "staging" -- start
+              pm2 save
+            elif [ ${CURRENT_BRANCH} == "dev" ]; then
+              cd dev/demo-ci-cd
+              ls -la
+              git checkout dev
+              git pull origin dev
+              npm install
+              npm run build
+              pm2 delete dev
+              pm2 flush
+              PORT=3008 pm2 start npm --name "dev" -- start
+              pm2 save           
+            else
+              exit 1
+            fi
+          EOF
