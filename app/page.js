@@ -4,7 +4,7 @@ const Page = () => {
   return (
     <>
       <h1>Main branch</h1>
-      <h1>Commit 09/01/2025</h1>
+      <h1>Commit #1</h1>
     </>
   );
 };
