@@ -20,39 +20,26 @@ jobs:
         with:
           node-version: 18
 
-      # - name: Install Dependencies
-      #   run: |
-      #     echo "DEPLOY_STEP: Current directory: $(pwd)"
-      #     npm install
-
       - name: Deploy to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           CURRENT_BRANCH: ${{ github.head_ref || github.ref_name }} 
         shell: bash
         run: |
-          echo "DEPLOY_SETUP: Current directory: $(pwd)"
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          echo "SSH_CONNECT: Current directory: $(pwd)"
           ssh -o StrictHostKeyChecking=no thunder@62.72.5.193 <<EOF
-            echo "SSH_SESSION: Current directory: $(pwd)"
             source ~/.bashrc
             export CURRENT_BRANCH="$CURRENT_BRANCH"
-            echo "BRANCH_INFO: Current directory: $(pwd)"
 
             ls -la
             cd front
-            echo "Now In Front Directory ========================>"
             ls -la
             cd demo-ci-cd
-            echo "Now In demo-ci-cd Directory ========================>"
             ls -la
             
             if [ ${CURRENT_BRANCH} == "main" ]; then
-              echo "main if condition called ========> test deployment (4) ==========================>"
               cd main/demo-ci-cd
               ls -la
               git checkout main
@@ -64,7 +51,6 @@ jobs:
               PORT=3007 pm2 start npm --name "main" -- start
               pm2 save
             elif [ ${CURRENT_BRANCH} == "staging" ]; then
-              echo "staging condition called ==========================>"
               cd staging/demo-ci-cd
               ls -la
               git checkout staging
@@ -74,7 +60,6 @@ jobs:
               pm2 start npm --name "staging" -- start
               pm2 save
             elif [ ${CURRENT_BRANCH} == "dev" ]; then
-              echo "dev condition called ==========================>"
               cd dev/demo-ci-cd
               ls -la
               git checkout dev
